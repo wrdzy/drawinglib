@@ -1,5 +1,5 @@
 -- Load the UI Library (replace with your own loadstring if using)
-local PhantomUI = loadstring(game:HttpGet("https://your-library-url-here.com/drawing-ui-library.lua"))()
+local PhantomUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/wrdzy/drawinglib/refs/heads/main/DrawingUiLIb.lua"))()
 
 -- Create a main window
 local mainWindow = PhantomUI:CreateWindow({
