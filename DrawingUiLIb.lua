@@ -1,13 +1,13 @@
---[[
+--[[ 
     Phantom UI Library
     A lightweight, modern UI library using the Drawing API for Roblox exploits
-    
+
     Features:
     - Sleek, minimal design
     - Smooth animations
     - Easy to use API
     - Fully customizable theme
-]]
+]]--
 
 -- Services
 local RunService = game:GetService("RunService")
@@ -75,7 +75,7 @@ local function CreateText(text, position, size, color, center)
     textObject.Visible = Library.Visible
     textObject.Font = Library.Font
     textObject.ZIndex = 10
-    
+
     local shadow = AddDrawing(Drawing.new("Text"))
     shadow.Text = text
     shadow.Position = position + Vector2.new(1, 1)
@@ -87,7 +87,7 @@ local function CreateText(text, position, size, color, center)
     shadow.Visible = Library.Visible
     shadow.Font = Library.Font
     shadow.ZIndex = 9
-    
+
     return {
         Object = textObject,
         Shadow = shadow,
@@ -116,7 +116,7 @@ Window.__index = Window
 
 function Window:AddSection(name)
     local sectionY = self.ContentY
-    
+
     -- Section container
     local container = AddDrawing(Drawing.new("Square"))
     container.Size = Vector2.new(self.Width - 20, 30)
@@ -126,7 +126,7 @@ function Window:AddSection(name)
     container.Transparency = 0.95
     container.Visible = Library.Visible
     container.ZIndex = 2
-    
+
     -- Section line accent
     local accent = AddDrawing(Drawing.new("Square"))
     accent.Size = Vector2.new(3, 30)
@@ -136,7 +136,7 @@ function Window:AddSection(name)
     accent.Transparency = 1
     accent.Visible = Library.Visible
     accent.ZIndex = 3
-    
+
     -- Section text
     local text = CreateText(
         name,
@@ -144,16 +144,12 @@ function Window:AddSection(name)
         18,
         Library.Theme.Accent
     )
-    
-    self.ContentY = sectionY + 40
-    
-    -- Return the y-position for elements to be added
-    return {
-        Container = container,
-        Accent = accent,
-        Text = text,
-        Y = self.ContentY
-    }
+
+    -- Use a separate Y counter for this section:
+    local sectionObj = { Container = container, Accent = accent, Text = text, Y = self.ContentY + 40 }
+    self.ContentY = sectionObj.Y
+
+    return sectionObj
 end
 
 function Window:AddToggle(options)
@@ -161,17 +157,16 @@ function Window:AddToggle(options)
     local default = options.Default or false
     local callback = options.Callback or function() end
     local section = options.Section
-    
-    local y
-if section then
-    y = section.Y
-    section.Y = y + 30
-else
-    y = self.ContentY
-    self.ContentY = y + 30
-end
 
-    
+    local y
+    if section then
+        y = section.Y
+        section.Y = y + 30
+    else
+        y = self.ContentY
+        self.ContentY = y + 30
+    end
+
     -- Toggle container
     local container = AddDrawing(Drawing.new("Square"))
     container.Size = Vector2.new(self.Width - 20, 25)
@@ -181,7 +176,7 @@ end
     container.Transparency = 0.95
     container.Visible = Library.Visible
     container.ZIndex = 2
-    
+
     -- Toggle text
     local text = CreateText(
         name,
@@ -189,7 +184,7 @@ end
         16,
         Library.Theme.Text
     )
-    
+
     -- Toggle indicator border
     local indicatorBorder = AddDrawing(Drawing.new("Square"))
     indicatorBorder.Size = Vector2.new(16, 16)
@@ -200,7 +195,7 @@ end
     indicatorBorder.Transparency = 1
     indicatorBorder.Visible = Library.Visible
     indicatorBorder.ZIndex = 4
-    
+
     -- Toggle indicator fill
     local indicatorFill = AddDrawing(Drawing.new("Square"))
     indicatorFill.Size = Vector2.new(10, 10)
@@ -210,9 +205,7 @@ end
     indicatorFill.Transparency = default and 1 or 0.4
     indicatorFill.Visible = Library.Visible
     indicatorFill.ZIndex = 3
-    
-    self.ContentY = y + 30
-    
+
     -- Toggle logic
     local toggle = {
         Value = default,
@@ -228,7 +221,7 @@ end
             callback(value)
         end
     }
-    
+
     -- Handle mouse click
     table.insert(self.Elements, {
         Type = "Toggle",
@@ -241,7 +234,7 @@ end
             toggle:SetValue(not toggle.Value)
         end
     })
-    
+
     return toggle
 end
 
@@ -253,17 +246,16 @@ function Window:AddSlider(options)
     local callback = options.Callback or function() end
     local decimals = options.Decimals or 1
     local section = options.Section
-    
-    local y
-if section then
-    y = section.Y
-    section.Y = y + 45
-else
-    y = self.ContentY
-    self.ContentY = y + 45
-end
 
-    
+    local y
+    if section then
+        y = section.Y
+        section.Y = y + 45
+    else
+        y = self.ContentY
+        self.ContentY = y + 45
+    end
+
     -- Slider container
     local container = AddDrawing(Drawing.new("Square"))
     container.Size = Vector2.new(self.Width - 20, 40)
@@ -273,7 +265,7 @@ end
     container.Transparency = 0.95
     container.Visible = Library.Visible
     container.ZIndex = 2
-    
+
     -- Slider text
     local text = CreateText(
         name,
@@ -281,7 +273,7 @@ end
         16,
         Library.Theme.Text
     )
-    
+
     -- Slider value text
     local valueText = CreateText(
         tostring(default),
@@ -289,7 +281,7 @@ end
         16,
         Library.Theme.Accent
     )
-    
+
     -- Slider track background
     local trackBg = AddDrawing(Drawing.new("Square"))
     trackBg.Size = Vector2.new(self.Width - 30, 6)
@@ -299,11 +291,11 @@ end
     trackBg.Transparency = 0.95
     trackBg.Visible = Library.Visible
     trackBg.ZIndex = 3
-    
+
     -- Calculate fill width based on default value
     local percent = (default - min) / (max - min)
     local fillWidth = (self.Width - 30) * percent
-    
+
     -- Slider track fill
     local trackFill = AddDrawing(Drawing.new("Square"))
     trackFill.Size = Vector2.new(fillWidth, 6)
@@ -313,7 +305,7 @@ end
     trackFill.Transparency = 1
     trackFill.Visible = Library.Visible
     trackFill.ZIndex = 4
-    
+
     -- Slider knob
     local knob = AddDrawing(Drawing.new("Square"))
     knob.Size = Vector2.new(10, 14)
@@ -323,9 +315,7 @@ end
     knob.Transparency = 1
     knob.Visible = Library.Visible
     knob.ZIndex = 5
-    
-    self.ContentY = y + 45
-    
+
     -- Slider logic
     local slider = {
         Value = default,
@@ -342,27 +332,24 @@ end
         SetValue = function(self, value)
             value = math.clamp(value, self.Min, self.Max)
             self.Value = value
-            
-            -- Update visuals
+
             local percent = (value - self.Min) / (self.Max - self.Min)
             local fillWidth = (Window.Width - 30) * percent
-            
+
             self.Fill.Size = Vector2.new(fillWidth, 6)
             self.Knob.Position = Vector2.new(self.Container.Position.X + fillWidth + 10, self.Knob.Position.Y)
             self.ValueText.SetText(tostring(Round(value, self.Decimals)))
-            
+
             callback(value)
         end,
         UpdateVisuals = function(self, mouseX)
             local relX = mouseX - self.Track.Position.X
             local percent = math.clamp(relX / self.Track.Size.X, 0, 1)
             local value = self.Min + ((self.Max - self.Min) * percent)
-            
             self:SetValue(value)
         end
     }
-    
-    -- Handle mouse interactions
+
     table.insert(self.Elements, {
         Type = "Slider",
         Instance = slider,
@@ -379,7 +366,7 @@ end
             end
         end
     })
-    
+
     return slider
 end
 
@@ -387,17 +374,16 @@ function Window:AddButton(options)
     local name = options.Name or "Button"
     local callback = options.Callback or function() end
     local section = options.Section
-    
-    local y
-if section then
-    y = section.Y
-    section.Y = y + 30
-else
-    y = self.ContentY
-    self.ContentY = y + 30
-end
 
-    
+    local y
+    if section then
+        y = section.Y
+        section.Y = y + 30
+    else
+        y = self.ContentY
+        self.ContentY = y + 30
+    end
+
     -- Button container
     local container = AddDrawing(Drawing.new("Square"))
     container.Size = Vector2.new(self.Width - 20, 25)
@@ -407,19 +393,16 @@ end
     container.Transparency = 0.95
     container.Visible = Library.Visible
     container.ZIndex = 2
-    
-    -- Button text
+
+    -- Button text (centered)
     local text = CreateText(
         name,
         Vector2.new(self.X + (self.Width / 2), self.Y + y + 4),
         16,
         Library.Theme.Text,
-        true -- centered
+        true
     )
-    
-    self.ContentY = y + 30
-    
-    -- Button logic
+
     local button = {
         Container = container,
         Text = text,
@@ -428,8 +411,7 @@ end
             self.Container.Color = hovering and Library.Theme.ButtonHover or Library.Theme.ButtonBackground
         end
     }
-    
-    -- Handle mouse interactions
+
     table.insert(self.Elements, {
         Type = "Button",
         Instance = button,
@@ -441,8 +423,7 @@ end
             button.Container.Color = Library.Theme.Accent
             callback()
             task.delay(0.15, function()
-                button.Container.Color = Library.HoveredButton == button and 
-                    Library.Theme.ButtonHover or Library.Theme.ButtonBackground
+                button.Container.Color = Library.HoveredButton == button and Library.Theme.ButtonHover or Library.Theme.ButtonBackground
             end)
         end,
         OnHover = function(hovering)
@@ -450,7 +431,7 @@ end
             Library.HoveredButton = hovering and button or nil
         end
     })
-    
+
     return button
 end
 
@@ -460,17 +441,16 @@ function Window:AddDropdown(options)
     local default = options.Default or items[1]
     local callback = options.Callback or function() end
     local section = options.Section
-    
-    local y
-if section then
-    y = section.Y
-    section.Y = y + 30
-else
-    y = self.ContentY
-    self.ContentY = y + 30
-end
 
-    
+    local y
+    if section then
+        y = section.Y
+        section.Y = y + 30
+    else
+        y = self.ContentY
+        self.ContentY = y + 30
+    end
+
     -- Dropdown container
     local container = AddDrawing(Drawing.new("Square"))
     container.Size = Vector2.new(self.Width - 20, 25)
@@ -480,7 +460,7 @@ end
     container.Transparency = 0.95
     container.Visible = Library.Visible
     container.ZIndex = 2
-    
+
     -- Dropdown text
     local text = CreateText(
         name .. ": " .. default,
@@ -488,7 +468,7 @@ end
         16,
         Library.Theme.Text
     )
-    
+
     -- Dropdown arrow
     local arrow = CreateText(
         "▼",
@@ -496,7 +476,7 @@ end
         16,
         Library.Theme.Text
     )
-    
+
     -- Dropdown menu (initially hidden)
     local menuContainer = AddDrawing(Drawing.new("Square"))
     menuContainer.Size = Vector2.new(self.Width - 20, #items * 25)
@@ -506,7 +486,7 @@ end
     menuContainer.Transparency = 0.95
     menuContainer.Visible = false
     menuContainer.ZIndex = 10
-    
+
     -- Dropdown menu border
     local menuBorder = AddDrawing(Drawing.new("Square"))
     menuBorder.Size = Vector2.new(self.Width - 20, #items * 25)
@@ -517,12 +497,12 @@ end
     menuBorder.Transparency = 0.95
     menuBorder.Visible = false
     menuBorder.ZIndex = 11
-    
+
     -- Create menu items
     local menuItems = {}
     for i, itemName in ipairs(items) do
-        local itemY = self.Y + y + 30 + ((i-1) * 25)
-        
+        local itemY = self.Y + y + 30 + ((i - 1) * 25)
+
         local itemContainer = AddDrawing(Drawing.new("Square"))
         itemContainer.Size = Vector2.new(self.Width - 20, 25)
         itemContainer.Position = Vector2.new(self.X + 10, itemY)
@@ -531,7 +511,7 @@ end
         itemContainer.Transparency = 0.95
         itemContainer.Visible = false
         itemContainer.ZIndex = 12
-        
+
         local itemText = CreateText(
             itemName,
             Vector2.new(self.X + 15, itemY + 4),
@@ -539,17 +519,14 @@ end
             itemName == default and Library.Theme.Text or Library.Theme.DarkText
         )
         itemText.SetVisible(false)
-        
+
         table.insert(menuItems, {
             Name = itemName,
             Container = itemContainer,
             Text = itemText
         })
     end
-    
-    self.ContentY = y + 30
-    
-    -- Dropdown logic
+
     local dropdown = {
         Container = container,
         Text = text,
@@ -563,61 +540,53 @@ end
         Callback = callback,
         SetValue = function(self, value)
             if not table.find(self.ItemsList, value) then return end
-            
+
             self.Selected = value
             self.Text.SetText(name .. ": " .. value)
-            
-            -- Update menu items
+
             for _, item in ipairs(self.Items) do
                 item.Container.Color = item.Name == value and Library.Theme.Accent or Library.Theme.ElementBackground
                 item.Text.Object.Color = item.Name == value and Library.Theme.Text or Library.Theme.DarkText
             end
-            
+
             callback(value)
         end,
         Toggle = function(self)
             self.Open = not self.Open
-            
+
             if self.Open then
-                -- Close any other dropdowns
                 if Library.ActiveDropdown and Library.ActiveDropdown ~= self then
                     Library.ActiveDropdown:Toggle()
                 end
-                
                 Library.ActiveDropdown = self
-                
-                -- Show menu
+
                 self.Menu.Visible = true
                 self.MenuBorder.Visible = true
-                
+
                 for _, item in ipairs(self.Items) do
                     item.Container.Visible = true
                     item.Text.SetVisible(true)
                 end
-                
-                -- Update arrow
+
                 self.Arrow.SetText("▲")
             else
                 if Library.ActiveDropdown == self then
                     Library.ActiveDropdown = nil
                 end
-                
-                -- Hide menu
+
                 self.Menu.Visible = false
                 self.MenuBorder.Visible = false
-                
+
                 for _, item in ipairs(self.Items) do
                     item.Container.Visible = false
                     item.Text.SetVisible(false)
                 end
-                
-                -- Update arrow
+
                 self.Arrow.SetText("▼")
             end
         end
     }
-    
-    -- Handle dropdown header click
+
     table.insert(self.Elements, {
         Type = "Dropdown",
         Instance = dropdown,
@@ -629,8 +598,7 @@ end
             dropdown:Toggle()
         end
     })
-    
-    -- Handle dropdown item clicks
+
     for i, item in ipairs(menuItems) do
         table.insert(self.Elements, {
             Type = "DropdownItem",
@@ -649,35 +617,31 @@ end
             Visible = function() return dropdown.Open end
         })
     end
-    
+
     return dropdown
 end
 
 function Window:AddLabel(options)
-    local text = options.Text or "Label"
+    local textStr = options.Text or "Label"
     local color = options.Color or Library.Theme.Text
     local section = options.Section
-    
-    local y
-if section then
-    y = section.Y
-    section.Y = y + 20
-else
-    y = self.ContentY
-    self.ContentY = y + 20
-end
 
-    
-    -- Label text
+    local y
+    if section then
+        y = section.Y
+        section.Y = y + 20
+    else
+        y = self.ContentY
+        self.ContentY = y + 20
+    end
+
     local label = CreateText(
-        text,
+        textStr,
         Vector2.new(self.X + 15, self.Y + y),
         16,
         color
     )
-    
-    self.ContentY = y + 20
-    
+
     return {
         Text = label,
         SetText = function(self, newText)
@@ -691,17 +655,16 @@ function Window:AddKeybind(options)
     local default = options.Default or Enum.KeyCode.F
     local callback = options.Callback or function() end
     local section = options.Section
-    
-    local y
-if section then
-    y = section.Y
-    section.Y = y + 30
-else
-    y = self.ContentY
-    self.ContentY = y + 30
-end
 
-    
+    local y
+    if section then
+        y = section.Y
+        section.Y = y + 30
+    else
+        y = self.ContentY
+        self.ContentY = y + 30
+    end
+
     -- Keybind container
     local container = AddDrawing(Drawing.new("Square"))
     container.Size = Vector2.new(self.Width - 20, 25)
@@ -711,7 +674,7 @@ end
     container.Transparency = 0.95
     container.Visible = Library.Visible
     container.ZIndex = 2
-    
+
     -- Keybind text
     local text = CreateText(
         name,
@@ -719,21 +682,15 @@ end
         16,
         Library.Theme.Text
     )
-    
-    -- Key name formatting
+
     local keyName = tostring(default):gsub("Enum.KeyCode.", "")
-    
-    -- Keybind value display
     local keyDisplay = CreateText(
         "[" .. keyName .. "]",
         Vector2.new(self.X + self.Width - 55, self.Y + y + 4),
         16,
         Library.Theme.Accent
     )
-    
-    self.ContentY = y + 30
-    
-    -- Keybind logic
+
     local keybind = {
         Container = container,
         Text = text,
@@ -747,7 +704,6 @@ end
             self.Display.SetText("[" .. keyName .. "]")
             self.Listening = false
             self.Container.Color = Library.Theme.ElementBackground
-            
             callback(key)
         end,
         StartListening = function(self)
@@ -756,15 +712,13 @@ end
             self.Container.Color = Library.Theme.Accent
         end
     }
-    
-    -- Handle key press
+
     table.insert(Library.Connections, UserInputService.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.Keyboard and keybind.Listening then
             keybind:SetKey(input.KeyCode)
         end
     end))
-    
-    -- Handle mouse click
+
     table.insert(self.Elements, {
         Type = "Keybind",
         Instance = keybind,
@@ -778,7 +732,7 @@ end
             end
         end
     })
-    
+
     return keybind
 end
 
@@ -790,7 +744,7 @@ function Library:CreateWindow(options)
     local height = options.Height or 350
     local x = options.X or 50
     local y = options.Y or 50
-    
+
     -- Create window container
     local container = AddDrawing(Drawing.new("Square"))
     container.Size = Vector2.new(width, height)
@@ -800,7 +754,7 @@ function Library:CreateWindow(options)
     container.Transparency = 0.95
     container.Visible = Library.Visible
     container.ZIndex = 1
-    
+
     -- Create window border
     local border = AddDrawing(Drawing.new("Square"))
     border.Size = Vector2.new(width, height)
@@ -811,7 +765,7 @@ function Library:CreateWindow(options)
     border.Transparency = 1
     border.Visible = Library.Visible
     border.ZIndex = 5
-    
+
     -- Create window shadow
     local shadow = AddDrawing(Drawing.new("Square"))
     shadow.Size = Vector2.new(width, height)
@@ -821,7 +775,7 @@ function Library:CreateWindow(options)
     shadow.Transparency = 0.5
     shadow.Visible = Library.Visible
     shadow.ZIndex = 0
-    
+
     -- Create title bar
     local titleBar = AddDrawing(Drawing.new("Square"))
     titleBar.Size = Vector2.new(width, 30)
@@ -831,7 +785,7 @@ function Library:CreateWindow(options)
     titleBar.Transparency = 0.95
     titleBar.Visible = Library.Visible
     titleBar.ZIndex = 2
-    
+
     -- Create title text
     local titleText = CreateText(
         title,
@@ -839,7 +793,7 @@ function Library:CreateWindow(options)
         18,
         Library.Theme.Text
     )
-    
+
     -- Close button
     local closeBtn = AddDrawing(Drawing.new("Square"))
     closeBtn.Size = Vector2.new(18, 18)
@@ -849,7 +803,7 @@ function Library:CreateWindow(options)
     closeBtn.Transparency = 0.9
     closeBtn.Visible = Library.Visible
     closeBtn.ZIndex = 3
-    
+
     local closeText = CreateText(
         "×",
         Vector2.new(x + width - 20, y + 4),
@@ -857,8 +811,7 @@ function Library:CreateWindow(options)
         Library.Theme.Text,
         true
     )
-    
-    -- Create window object
+
     local window = setmetatable({
         Container = container,
         Border = border,
@@ -876,39 +829,32 @@ function Library:CreateWindow(options)
         Dragging = false,
         DragOffset = Vector2.new(0, 0)
     }, Window)
-    
-    -- Add window to list
+
     table.insert(Library.Windows, window)
-    
-    -- Handle title bar dragging
+
     table.insert(Library.Connections, UserInputService.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             local mousePos = UserInputService:GetMouseLocation()
-            
-            -- Check if clicking title bar
             if IsInBounds(mousePos, titleBar.Position, Vector2.new(width - 30, 30)) then
                 window.Dragging = true
                 window.DragOffset = mousePos - Vector2.new(x, y)
             end
-            
-            -- Check if clicking close button
             if IsInBounds(mousePos, closeBtn.Position, closeBtn.Size) then
                 Library:CloseWindow(window)
             end
         end
     end))
-    
+
     table.insert(Library.Connections, UserInputService.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             window.Dragging = false
         end
     end))
-    
+
     return window
 end
--- Function to close window
+
 function Library:CloseWindow(window)
-    -- Remove all window elements
     window.Container:Remove()
     window.Border:Remove()
     window.Shadow:Remove()
@@ -916,8 +862,7 @@ function Library:CloseWindow(window)
     window.TitleText.Remove()
     window.CloseButton:Remove()
     window.CloseText.Remove()
-    
-    -- Remove from windows list
+
     for i, w in pairs(Library.Windows) do
         if w == window then
             table.remove(Library.Windows, i)
@@ -926,42 +871,31 @@ function Library:CloseWindow(window)
     end
 end
 
--- Function to toggle visibility of all UI elements
 function Library:ToggleUI()
     Library.Visible = not Library.Visible
-    
-    -- Update all drawings
+
     for _, drawing in pairs(Library.Drawings) do
-        if drawing.Visible ~= nil then -- Some drawing objects might already be removed
+        if drawing.Visible ~= nil then
             drawing.Visible = Library.Visible
         end
     end
 end
 
--- Update UI positions and handle mouse interactions
 function Library:Update()
     local mousePos = UserInputService:GetMouseLocation()
-    
-    -- Handle window dragging
+
     for _, window in pairs(Library.Windows) do
         if window.Dragging then
             local newPos = mousePos - window.DragOffset
-            
-            -- Keep windows within screen bounds
             local screenSize = workspace.CurrentCamera.ViewportSize
             newPos = Vector2.new(
                 math.clamp(newPos.X, 0, screenSize.X - window.Width),
                 math.clamp(newPos.Y, 0, screenSize.Y - window.Height)
             )
-            
-            -- Calculate movement delta
             local delta = newPos - Vector2.new(window.X, window.Y)
-            
-            -- Update window position
             window.X = newPos.X
             window.Y = newPos.Y
-            
-            -- Update all window elements
+
             window.Container.Position = newPos
             window.Border.Position = newPos
             window.Shadow.Position = newPos + Vector2.new(3, 3)
@@ -969,19 +903,16 @@ function Library:Update()
             window.TitleText.SetPosition(newPos + Vector2.new(10, 7))
             window.CloseButton.Position = Vector2.new(newPos.X + window.Width - 25, newPos.Y + 6)
             window.CloseText.SetPosition(Vector2.new(newPos.X + window.Width - 20, newPos.Y + 4))
-            
-            -- Update all elements in the window
+
             for _, element in pairs(window.Elements) do
                 if element.Type == "Toggle" then
                     element.Instance.Container.Position = element.Instance.Container.Position + delta
                     element.Instance.IndicatorBorder.Position = element.Instance.IndicatorBorder.Position + delta
                     element.Instance.IndicatorFill.Position = element.Instance.IndicatorFill.Position + delta
                     element.Instance.Text.SetPosition(element.Instance.Text.Object.Position + delta)
-                    
-                    -- Update bounds
                     element.Bounds.Min = element.Bounds.Min + delta
                     element.Bounds.Max = element.Bounds.Max + delta
-                    
+
                 elseif element.Type == "Slider" then
                     element.Instance.Container.Position = element.Instance.Container.Position + delta
                     element.Instance.Track.Position = element.Instance.Track.Position + delta
@@ -989,75 +920,60 @@ function Library:Update()
                     element.Instance.Knob.Position = element.Instance.Knob.Position + delta
                     element.Instance.Text.SetPosition(element.Instance.Text.Object.Position + delta)
                     element.Instance.ValueText.SetPosition(element.Instance.ValueText.Object.Position + delta)
-                    
-                    -- Update bounds
                     element.Bounds.Min = element.Bounds.Min + delta
                     element.Bounds.Max = element.Bounds.Max + delta
-                    
+
                 elseif element.Type == "Button" then
                     element.Instance.Container.Position = element.Instance.Container.Position + delta
                     element.Instance.Text.SetPosition(element.Instance.Text.Object.Position + delta)
-                    
-                    -- Update bounds
                     element.Bounds.Min = element.Bounds.Min + delta
                     element.Bounds.Max = element.Bounds.Max + delta
-                    
+
                 elseif element.Type == "Dropdown" then
                     element.Instance.Container.Position = element.Instance.Container.Position + delta
                     element.Instance.Text.SetPosition(element.Instance.Text.Object.Position + delta)
                     element.Instance.Arrow.SetPosition(element.Instance.Arrow.Object.Position + delta)
-                    
                     if element.Instance.Open then
                         element.Instance.Menu.Position = element.Instance.Menu.Position + delta
                         element.Instance.MenuBorder.Position = element.Instance.MenuBorder.Position + delta
-                        
                         for _, item in pairs(element.Instance.Items) do
                             item.Container.Position = item.Container.Position + delta
                             item.Text.SetPosition(item.Text.Object.Position + delta)
                         end
                     end
-                    
-                    -- Update bounds
                     element.Bounds.Min = element.Bounds.Min + delta
                     element.Bounds.Max = element.Bounds.Max + delta
-                    
+
                 elseif element.Type == "DropdownItem" then
-                    -- Only update if parent dropdown is open
                     if element.Instance.Dropdown.Open then
                         element.Bounds.Min = element.Bounds.Min + delta
                         element.Bounds.Max = element.Bounds.Max + delta
                     end
-                    
+
                 elseif element.Type == "Keybind" then
                     element.Instance.Container.Position = element.Instance.Container.Position + delta
                     element.Instance.Text.SetPosition(element.Instance.Text.Object.Position + delta)
                     element.Instance.Display.SetPosition(element.Instance.Display.Object.Position + delta)
-                    
-                    -- Update bounds
                     element.Bounds.Min = element.Bounds.Min + delta
                     element.Bounds.Max = element.Bounds.Max + delta
                 end
             end
         end
     end
-    
-    -- Handle slider dragging
+
     if Library.DraggingSlider then
         Library.DraggingSlider:UpdateVisuals(mousePos.X)
     end
-    
-    -- Handle hovering
+
     for _, window in pairs(Library.Windows) do
         for _, element in pairs(window.Elements) do
-            -- Check if element should be processed based on visibility
             local visible = true
             if element.Visible then
                 visible = element.Visible()
             end
-            
+
             if visible then
                 local hovering = IsInBounds(mousePos, element.Bounds.Min, element.Bounds.Max - element.Bounds.Min)
-                
                 if element.OnHover then
                     element.OnHover(hovering)
                 end
@@ -1066,21 +982,16 @@ function Library:Update()
     end
 end
 
--- Handle mouse button clicks
 function Library:InitializeMouseHandling()
     UserInputService.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             local mousePos = UserInputService:GetMouseLocation()
-            
-            -- Handle clicks on UI elements
             for _, window in pairs(Library.Windows) do
                 for _, element in pairs(window.Elements) do
-                    -- Check if element should be processed based on visibility
                     local visible = true
                     if element.Visible then
                         visible = element.Visible()
                     end
-                    
                     if visible and IsInBounds(mousePos, element.Bounds.Min, element.Bounds.Max - element.Bounds.Min) then
                         if element.OnClick then
                             element.OnClick()
@@ -1090,46 +1001,40 @@ function Library:InitializeMouseHandling()
             end
         end
     end)
-    
+
     UserInputService.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            -- Reset dragging slider
             Library.DraggingSlider = nil
         end
     end)
-    
-    -- Handle keyboard input (for toggle key and keybinds)
+
     UserInputService.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.Keyboard then
-            -- Toggle UI visibility with the toggle key
             if input.KeyCode == Library.ToggleKey then
                 Library:ToggleUI()
             end
         end
     end)
-    
-    -- Update UI on mouse movement
+
     RunService.RenderStepped:Connect(function()
         Library:Update()
     end)
 end
 
--- Clean up all drawings
 function Library:Cleanup()
     for _, connection in pairs(Library.Connections) do
         connection:Disconnect()
     end
-    
+
     for _, drawing in pairs(Library.Drawings) do
         pcall(function() drawing:Remove() end)
     end
-    
+
     Library.Drawings = {}
     Library.Windows = {}
     Library.Connections = {}
 end
 
--- Initialize the library
 function Library:Init()
     Library:InitializeMouseHandling()
     return Library
