@@ -10,6 +10,22 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
 -- Library
+
+-- Tween animation utility
+local function Animate(instance, property, target, duration, callback)
+    local start = tick()
+    local initial = instance[property]
+    local conn
+    conn = RunService.RenderStepped:Connect(function()
+        local alpha = math.clamp((tick() - start) / duration, 0, 1)
+        instance[property] = initial:Lerp(target, alpha)
+        if alpha >= 1 then
+            instance[property] = target
+            conn:Disconnect()
+            if callback then callback() end
+        end
+    end)
+end
 local Library = {
     Drawings = {},
     Connections = {},
