@@ -162,11 +162,15 @@ function Window:AddToggle(options)
     local callback = options.Callback or function() end
     local section = options.Section
     
-    local y = self.ContentY
-    if section then
-        y = section.Y
-        section.Y = y + 30
-    end
+    local y
+if section then
+    y = section.Y
+    section.Y = y + 30
+else
+    y = self.ContentY
+    self.ContentY = y + 30
+end
+
     
     -- Toggle container
     local container = AddDrawing(Drawing.new("Square"))
@@ -250,11 +254,15 @@ function Window:AddSlider(options)
     local decimals = options.Decimals or 1
     local section = options.Section
     
-    local y = self.ContentY
-    if section then
-        y = section.Y
-        section.Y = y + 45
-    end
+    local y
+if section then
+    y = section.Y
+    section.Y = y + 45
+else
+    y = self.ContentY
+    self.ContentY = y + 45
+end
+
     
     -- Slider container
     local container = AddDrawing(Drawing.new("Square"))
@@ -380,11 +388,15 @@ function Window:AddButton(options)
     local callback = options.Callback or function() end
     local section = options.Section
     
-    local y = self.ContentY
-    if section then
-        y = section.Y
-        section.Y = y + 30
-    end
+    local y
+if section then
+    y = section.Y
+    section.Y = y + 30
+else
+    y = self.ContentY
+    self.ContentY = y + 30
+end
+
     
     -- Button container
     local container = AddDrawing(Drawing.new("Square"))
@@ -449,11 +461,15 @@ function Window:AddDropdown(options)
     local callback = options.Callback or function() end
     local section = options.Section
     
-    local y = self.ContentY
-    if section then
-        y = section.Y
-        section.Y = y + 30
-    end
+    local y
+if section then
+    y = section.Y
+    section.Y = y + 30
+else
+    y = self.ContentY
+    self.ContentY = y + 30
+end
+
     
     -- Dropdown container
     local container = AddDrawing(Drawing.new("Square"))
@@ -642,11 +658,15 @@ function Window:AddLabel(options)
     local color = options.Color or Library.Theme.Text
     local section = options.Section
     
-    local y = self.ContentY
-    if section then
-        y = section.Y
-        section.Y = y + 20
-    end
+    local y
+if section then
+    y = section.Y
+    section.Y = y + 20
+else
+    y = self.ContentY
+    self.ContentY = y + 20
+end
+
     
     -- Label text
     local label = CreateText(
@@ -672,11 +692,15 @@ function Window:AddKeybind(options)
     local callback = options.Callback or function() end
     local section = options.Section
     
-    local y = self.ContentY
-    if section then
-        y = section.Y
-        section.Y = y + 30
-    end
+    local y
+if section then
+    y = section.Y
+    section.Y = y + 30
+else
+    y = self.ContentY
+    self.ContentY = y + 30
+end
+
     
     -- Keybind container
     local container = AddDrawing(Drawing.new("Square"))
