@@ -1,5 +1,5 @@
 -- UI Library using Drawing API for exploit use
--- Horizon GUI styled + Full Tab Support + Ready-to-Use
+-- Horizon GUI styled + Full Tab Support + Correct Separation
 
 local Library = {}
 Library.__index = Library
@@ -130,16 +130,17 @@ end
 function Library:CreateTab(name)
     local tab = {
         Name = name,
-        Components = {}
+        Components = {},
+        Button = create("Text", {
+            Text = name,
+            Size = 16,
+            Color = Color3.fromRGB(200, 200, 255),
+            Outline = true,
+            Position = Vector2.new(),
+            Visible = true,
+        })
     }
-    tab.Button = create("Text", {
-        Text = name,
-        Size = 16,
-        Color = Color3.fromRGB(200, 200, 255),
-        Outline = true,
-        Position = self.Position + Vector2.new(10 + (#self.Tabs * 70), 30),
-        Visible = true,
-    })
+
     table.insert(self.Tabs, tab)
     table.insert(Clickables, {
         obj = tab.Button,
@@ -155,6 +156,9 @@ end
 function Library:SetActiveTab(tab)
     self.CurrentTab = tab
     self.ComponentY = 60
+    for _, t in ipairs(self.Tabs) do
+        t.Button.Color = (t == tab) and Color3.fromRGB(0, 200, 255) or Color3.fromRGB(200, 200, 255)
+    end
 end
 
 function Library:AddComponent(obj, height)
@@ -184,7 +188,11 @@ function Library:CreateButton(text, callback)
         Position = self.Position + Vector2.new(10, self.ComponentY),
         Visible = true
     })
-    table.insert(Clickables, {obj = btn, callback = callback, size = Vector2.new(150, 20)})
+    table.insert(Clickables, {
+        obj = btn,
+        callback = callback,
+        size = Vector2.new(150, 20)
+    })
     self:AddComponent(btn, 25)
     return btn
 end
@@ -192,6 +200,7 @@ end
 function Library:CreateSlider(title, min, max, default, callback)
     local value = default or min
     local barWidth = 200
+
     local label = create("Text", {
         Text = title .. ": " .. tostring(value),
         Size = 16,
@@ -200,6 +209,7 @@ function Library:CreateSlider(title, min, max, default, callback)
         Position = self.Position + Vector2.new(10, self.ComponentY),
         Visible = true
     })
+
     local bar = create("Square", {
         Position = self.Position + Vector2.new(10, self.ComponentY + 18),
         Size = Vector2.new(barWidth, 6),
@@ -207,6 +217,7 @@ function Library:CreateSlider(title, min, max, default, callback)
         Filled = true,
         Visible = true
     })
+
     local fill = create("Square", {
         Position = bar.Position,
         Size = Vector2.new(0, 6),
@@ -214,8 +225,10 @@ function Library:CreateSlider(title, min, max, default, callback)
         Filled = true,
         Visible = true
     })
+
     local dragging = false
-    RS.RenderStepped:Connect(function()
+
+    game:GetService("RunService").RenderStepped:Connect(function()
         if dragging then
             local mouse = UIS:GetMouseLocation()
             local percent = math.clamp((mouse.X - bar.Position.X) / barWidth, 0, 1)
@@ -225,6 +238,7 @@ function Library:CreateSlider(title, min, max, default, callback)
             pcall(callback, value)
         end
     end)
+
     UIS.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             local mouse = UIS:GetMouseLocation()
@@ -234,13 +248,19 @@ function Library:CreateSlider(title, min, max, default, callback)
             end
         end
     end)
+
     UIS.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = false
+        end
     end)
+
     self:AddComponent(label, 26)
     self:AddComponent(bar, 8)
     self:AddComponent(fill, 0)
+
     return label
 end
+
 
 return Library
