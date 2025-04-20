@@ -100,8 +100,8 @@ local function CreateText(text, position, size, color, center)
             shadow.Position = newPosition + Vector2.new(1, 1)
         end,
         SetVisible = function(visible)
-            textObject.Visible = visible
-            shadow.Visible = visible
+            textObject.Visible = visible and Library.Visible
+            shadow.Visible = visible and Library.Visible
         end,
         Remove = function()
             textObject:Remove()
@@ -276,7 +276,7 @@ function Window:AddSlider(options)
 
     -- Slider value text
     local valueText = CreateText(
-        tostring(default),
+        tostring(Round(default, decimals)),
         Vector2.new(self.X + self.Width - 30, self.Y + y + 4),
         16,
         Library.Theme.Accent
@@ -334,10 +334,10 @@ function Window:AddSlider(options)
             self.Value = value
 
             local percent = (value - self.Min) / (self.Max - self.Min)
-            local fillWidth = (Window.Width - 30) * percent
+            local fillWidth = (self.Track.Size.X) * percent
 
             self.Fill.Size = Vector2.new(fillWidth, 6)
-            self.Knob.Position = Vector2.new(self.Container.Position.X + fillWidth + 10, self.Knob.Position.Y)
+            self.Knob.Position = Vector2.new(self.Track.Position.X + fillWidth - 5, self.Knob.Position.Y)
             self.ValueText.SetText(tostring(Round(value, self.Decimals)))
 
             callback(value)
@@ -713,6 +713,7 @@ function Window:AddKeybind(options)
         end
     }
 
+    -- Fixed: Add input handler to the Library.Connections table
     table.insert(Library.Connections, UserInputService.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.Keyboard and keybind.Listening then
             keybind:SetKey(input.KeyCode)
@@ -832,19 +833,25 @@ function Library:CreateWindow(options)
 
     table.insert(Library.Windows, window)
 
+    -- Fixed: Add input handlers to the Library.Connections table
     table.insert(Library.Connections, UserInputService.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             local mousePos = UserInputService:GetMouseLocation()
+            
+            -- Check if clicked on title bar (for dragging)
             if IsInBounds(mousePos, titleBar.Position, Vector2.new(width - 30, 30)) then
                 window.Dragging = true
                 window.DragOffset = mousePos - Vector2.new(x, y)
             end
+            
+            -- Check if clicked on close button
             if IsInBounds(mousePos, closeBtn.Position, closeBtn.Size) then
                 Library:CloseWindow(window)
             end
         end
     end))
 
+    -- Fixed: Add input end handler to stop dragging
     table.insert(Library.Connections, UserInputService.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             window.Dragging = false
@@ -855,6 +862,7 @@ function Library:CreateWindow(options)
 end
 
 function Library:CloseWindow(window)
+    -- Remove all window elements
     window.Container:Remove()
     window.Border:Remove()
     window.Shadow:Remove()
@@ -863,6 +871,7 @@ function Library:CloseWindow(window)
     window.CloseButton:Remove()
     window.CloseText.Remove()
 
+    -- Remove from windows table
     for i, w in pairs(Library.Windows) do
         if w == window then
             table.remove(Library.Windows, i)
@@ -874,170 +883,10 @@ end
 function Library:ToggleUI()
     Library.Visible = not Library.Visible
 
+    -- Update visibility for all drawings
     for _, drawing in pairs(Library.Drawings) do
-        if drawing.Visible ~= nil then
+        if drawing and drawing.Visible ~= nil then
             drawing.Visible = Library.Visible
         end
     end
 end
-
-function Library:Update()
-    local mousePos = UserInputService:GetMouseLocation()
-
-    for _, window in pairs(Library.Windows) do
-        if window.Dragging then
-            local newPos = mousePos - window.DragOffset
-            local screenSize = workspace.CurrentCamera.ViewportSize
-            newPos = Vector2.new(
-                math.clamp(newPos.X, 0, screenSize.X - window.Width),
-                math.clamp(newPos.Y, 0, screenSize.Y - window.Height)
-            )
-            local delta = newPos - Vector2.new(window.X, window.Y)
-            window.X = newPos.X
-            window.Y = newPos.Y
-
-            window.Container.Position = newPos
-            window.Border.Position = newPos
-            window.Shadow.Position = newPos + Vector2.new(3, 3)
-            window.TitleBar.Position = newPos
-            window.TitleText.SetPosition(newPos + Vector2.new(10, 7))
-            window.CloseButton.Position = Vector2.new(newPos.X + window.Width - 25, newPos.Y + 6)
-            window.CloseText.SetPosition(Vector2.new(newPos.X + window.Width - 20, newPos.Y + 4))
-
-            for _, element in pairs(window.Elements) do
-                if element.Type == "Toggle" then
-                    element.Instance.Container.Position = element.Instance.Container.Position + delta
-                    element.Instance.IndicatorBorder.Position = element.Instance.IndicatorBorder.Position + delta
-                    element.Instance.IndicatorFill.Position = element.Instance.IndicatorFill.Position + delta
-                    element.Instance.Text.SetPosition(element.Instance.Text.Object.Position + delta)
-                    element.Bounds.Min = element.Bounds.Min + delta
-                    element.Bounds.Max = element.Bounds.Max + delta
-
-                elseif element.Type == "Slider" then
-                    element.Instance.Container.Position = element.Instance.Container.Position + delta
-                    element.Instance.Track.Position = element.Instance.Track.Position + delta
-                    element.Instance.Fill.Position = element.Instance.Fill.Position + delta
-                    element.Instance.Knob.Position = element.Instance.Knob.Position + delta
-                    element.Instance.Text.SetPosition(element.Instance.Text.Object.Position + delta)
-                    element.Instance.ValueText.SetPosition(element.Instance.ValueText.Object.Position + delta)
-                    element.Bounds.Min = element.Bounds.Min + delta
-                    element.Bounds.Max = element.Bounds.Max + delta
-
-                elseif element.Type == "Button" then
-                    element.Instance.Container.Position = element.Instance.Container.Position + delta
-                    element.Instance.Text.SetPosition(element.Instance.Text.Object.Position + delta)
-                    element.Bounds.Min = element.Bounds.Min + delta
-                    element.Bounds.Max = element.Bounds.Max + delta
-
-                elseif element.Type == "Dropdown" then
-                    element.Instance.Container.Position = element.Instance.Container.Position + delta
-                    element.Instance.Text.SetPosition(element.Instance.Text.Object.Position + delta)
-                    element.Instance.Arrow.SetPosition(element.Instance.Arrow.Object.Position + delta)
-                    if element.Instance.Open then
-                        element.Instance.Menu.Position = element.Instance.Menu.Position + delta
-                        element.Instance.MenuBorder.Position = element.Instance.MenuBorder.Position + delta
-                        for _, item in pairs(element.Instance.Items) do
-                            item.Container.Position = item.Container.Position + delta
-                            item.Text.SetPosition(item.Text.Object.Position + delta)
-                        end
-                    end
-                    element.Bounds.Min = element.Bounds.Min + delta
-                    element.Bounds.Max = element.Bounds.Max + delta
-
-                elseif element.Type == "DropdownItem" then
-                    if element.Instance.Dropdown.Open then
-                        element.Bounds.Min = element.Bounds.Min + delta
-                        element.Bounds.Max = element.Bounds.Max + delta
-                    end
-
-                elseif element.Type == "Keybind" then
-                    element.Instance.Container.Position = element.Instance.Container.Position + delta
-                    element.Instance.Text.SetPosition(element.Instance.Text.Object.Position + delta)
-                    element.Instance.Display.SetPosition(element.Instance.Display.Object.Position + delta)
-                    element.Bounds.Min = element.Bounds.Min + delta
-                    element.Bounds.Max = element.Bounds.Max + delta
-                end
-            end
-        end
-    end
-
-    if Library.DraggingSlider then
-        Library.DraggingSlider:UpdateVisuals(mousePos.X)
-    end
-
-    for _, window in pairs(Library.Windows) do
-        for _, element in pairs(window.Elements) do
-            local visible = true
-            if element.Visible then
-                visible = element.Visible()
-            end
-
-            if visible then
-                local hovering = IsInBounds(mousePos, element.Bounds.Min, element.Bounds.Max - element.Bounds.Min)
-                if element.OnHover then
-                    element.OnHover(hovering)
-                end
-            end
-        end
-    end
-end
-
-function Library:InitializeMouseHandling()
-    UserInputService.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            local mousePos = UserInputService:GetMouseLocation()
-            for _, window in pairs(Library.Windows) do
-                for _, element in pairs(window.Elements) do
-                    local visible = true
-                    if element.Visible then
-                        visible = element.Visible()
-                    end
-                    if visible and IsInBounds(mousePos, element.Bounds.Min, element.Bounds.Max - element.Bounds.Min) then
-                        if element.OnClick then
-                            element.OnClick()
-                        end
-                    end
-                end
-            end
-        end
-    end)
-
-    UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            Library.DraggingSlider = nil
-        end
-    end)
-
-    UserInputService.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Keyboard then
-            if input.KeyCode == Library.ToggleKey then
-                Library:ToggleUI()
-            end
-        end
-    end)
-
-    RunService.RenderStepped:Connect(function()
-        Library:Update()
-    end)
-end
-
-function Library:Cleanup()
-    for _, connection in pairs(Library.Connections) do
-        connection:Disconnect()
-    end
-
-    for _, drawing in pairs(Library.Drawings) do
-        pcall(function() drawing:Remove() end)
-    end
-
-    Library.Drawings = {}
-    Library.Windows = {}
-    Library.Connections = {}
-end
-
-function Library:Init()
-    Library:InitializeMouseHandling()
-    return Library
-end
-
-return Library:Init()
